@@ -30,16 +30,7 @@ const App = () => (
               <Dashboard />
             </AppLayout>
           } />
-          <Route path="/prompts" element={
-            <AppLayout>
-              <Prompts />
-            </AppLayout>
-          } />
-          <Route path="/prompts/:id" element={
-            <AppLayout>
-              <PromptDetail />
-            </AppLayout>
-          } />
+          {/* Important: Order matters for React Router - more specific routes first */}
           <Route path="/prompts/create" element={
             <AppLayout>
               <PromptForm />
@@ -48,6 +39,16 @@ const App = () => (
           <Route path="/prompts/edit/:id" element={
             <AppLayout>
               <PromptForm />
+            </AppLayout>
+          } />
+          <Route path="/prompts/:id" element={
+            <AppLayout>
+              <PromptDetail />
+            </AppLayout>
+          } />
+          <Route path="/prompts" element={
+            <AppLayout>
+              <Prompts />
             </AppLayout>
           } />
           <Route path="/tools" element={
