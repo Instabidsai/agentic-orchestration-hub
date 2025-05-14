@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,34 +15,20 @@ import {
 } from '@/components/ui/popover';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Enums } from '@/integrations/supabase/types';
+import { getPromptFilters } from '@/api/prompts';
 
 interface FilterOption {
   value: string;
   label: string;
 }
 
-const interfaceOptions: FilterOption[] = [
-  { value: 'all', label: 'All Interfaces' },
-  { value: 'chatgpt', label: 'ChatGPT' },
-  { value: 'claude', label: 'Claude' },
-  { value: 'gemini', label: 'Gemini' },
-  { value: 'vscode', label: 'VS Code' },
-  { value: 'other', label: 'Other' },
-];
-
-const useCaseOptions: FilterOption[] = [
-  { value: 'all', label: 'All Use Cases' },
-  { value: 'coding', label: 'Coding' },
-  { value: 'research', label: 'Research' },
-  { value: 'data-analysis', label: 'Data Analysis' },
-  { value: 'content', label: 'Content Creation' },
-  { value: 'system-design', label: 'System Design' },
-];
-
 interface PromptFiltersProps {
   onFilterChange: (filter: string, value: string) => void;
   selectedInterface: string;
-  selectedUseCase: string;
+  selectedDomain: string;
+  selectedTags: string[];
+  onTagToggle: (tag: string) => void;
 }
 
 const FilterSelect: React.FC<{
@@ -101,17 +86,66 @@ const FilterSelect: React.FC<{
 const PromptFilters: React.FC<PromptFiltersProps> = ({ 
   onFilterChange, 
   selectedInterface, 
-  selectedUseCase 
+  selectedDomain, 
+  selectedTags,
+  onTagToggle
 }) => {
-  const activeTags = [
-    { id: 'react', label: 'React' },
-    { id: 'database', label: 'Database' },
-    { id: 'api', label: 'API' },
-  ];
+  const [interfaceOptions, setInterfaceOptions] = useState<FilterOption[]>([
+    { value: 'all', label: 'All Interfaces' }
+  ]);
 
-  const handleRemoveTag = (tagId: string) => {
-    // In a real app, this would remove the tag from the active filters
-    console.log(`Remove tag: ${tagId}`);
+  const [domainOptions, setDomainOptions] = useState<FilterOption[]>([
+    { value: 'all', label: 'All Domains' }
+  ]);
+
+  const [availableTags, setAvailableTags] = useState<{id: string, name: string}[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFilters();
+  }, []);
+
+  const fetchFilters = async () => {
+    try {
+      setLoading(true);
+      const filters = await getPromptFilters();
+      
+      // Process interfaces
+      const interfaces = [
+        { value: 'all', label: 'All Interfaces' },
+        ...filters.interfaces.map(i => ({
+          value: i,
+          label: formatEnumLabel(i)
+        }))
+      ];
+      setInterfaceOptions(interfaces);
+      
+      // Process domains
+      const domains = [
+        { value: 'all', label: 'All Domains' },
+        ...filters.domains.map(d => ({
+          value: d,
+          label: formatEnumLabel(d)
+        }))
+      ];
+      setDomainOptions(domains);
+      
+      // Set available tags
+      setAvailableTags(filters.tags);
+      
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching filters:', error);
+      setLoading(false);
+    }
+  };
+
+  // Helper to format enum values for display
+  const formatEnumLabel = (value: string): string => {
+    return value
+      .replace(/_/g, ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, c => c.toUpperCase());
   };
 
   return (
@@ -123,39 +157,49 @@ const PromptFilters: React.FC<PromptFiltersProps> = ({
           value={selectedInterface}
           onChange={(value) => onFilterChange('interface', value)}
           label="Interface"
+          disabled={loading}
         />
         
         <FilterSelect 
-          options={useCaseOptions}
-          value={selectedUseCase}
-          onChange={(value) => onFilterChange('useCase', value)}
-          label="Use Case"
+          options={domainOptions}
+          value={selectedDomain}
+          onChange={(value) => onFilterChange('domain', value)}
+          label="Domain"
+          disabled={loading}
         />
         
-        <Button variant="outline">
+        <Button variant="outline" disabled>
           Project
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
         
-        <Button variant="outline">
+        <Button variant="outline" disabled>
           Created By
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </div>
       
-      {activeTags.length > 0 && (
-        <div className="flex gap-2 mt-3">
-          <span className="text-sm text-muted-foreground pt-0.5">Tags:</span>
-          <div className="flex gap-1.5 flex-wrap">
-            {activeTags.map(tag => (
-              <Badge key={tag.id} variant="secondary" className="px-2 py-1 gap-1.5 cursor-pointer hover:bg-secondary/80">
-                {tag.label}
-                <span className="text-xs leading-none" onClick={() => handleRemoveTag(tag.id)}>×</span>
-              </Badge>
-            ))}
-          </div>
+      <div className="mt-4">
+        <div className="text-sm text-muted-foreground mb-2">Tags:</div>
+        <div className="flex flex-wrap gap-2">
+          {availableTags.map(tag => (
+            <Badge 
+              key={tag.id} 
+              variant={selectedTags.includes(tag.name) ? "default" : "outline"}
+              className="cursor-pointer"
+              onClick={() => onTagToggle(tag.name)}
+            >
+              {tag.name}
+            </Badge>
+          ))}
+          {availableTags.length === 0 && !loading && (
+            <span className="text-sm text-muted-foreground">No tags available</span>
+          )}
+          {loading && (
+            <span className="text-sm text-muted-foreground">Loading tags...</span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 };
