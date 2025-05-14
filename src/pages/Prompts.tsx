@@ -1,111 +1,100 @@
-
-import React, { useState } from 'react';
-import PromptCard, { PromptCardProps } from '@/components/prompts/PromptCard';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import PromptCard from '@/components/prompts/PromptCard';
 import PromptFilters from '@/components/prompts/PromptFilters';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Plus, BookOpen, Search } from 'lucide-react';
+import { searchPrompts, Prompt, PromptFilters as PromptFiltersType } from '@/api/prompts';
+import { Enums } from '@/integrations/supabase/types';
 
-// Mock data for prompts
-const mockPrompts: PromptCardProps[] = [
-  {
-    id: '1',
-    title: 'Database Schema Generator',
-    description: 'Generate complete database schemas with tables, relationships, and documentation from natural language descriptions.',
-    tags: ['Database', 'SQL', 'Schema Design'],
-    interface: 'ChatGPT',
-    useCount: 124,
-    lastUpdated: '2 days ago',
-    isFavorite: true,
-  },
-  {
-    id: '2',
-    title: 'Code Review Assistant',
-    description: 'Provides detailed code reviews with suggestions for improvements, potential bugs, and optimization opportunities.',
-    tags: ['Code Review', 'Best Practices'],
-    interface: 'Claude',
-    useCount: 98,
-    lastUpdated: '5 days ago',
-    isFavorite: false,
-  },
-  {
-    id: '3',
-    title: 'Research Paper Analyzer',
-    description: 'Extract key findings, methodologies, and insights from academic research papers.',
-    tags: ['Research', 'Academic', 'Analysis'],
-    interface: 'Claude',
-    useCount: 76,
-    lastUpdated: '1 week ago',
-    isFavorite: false,
-  },
-  {
-    id: '4',
-    title: 'API Documentation Generator',
-    description: 'Create comprehensive API documentation from code examples and endpoint descriptions.',
-    tags: ['API', 'Documentation'],
-    interface: 'ChatGPT',
-    useCount: 65,
-    lastUpdated: '3 days ago',
-    isFavorite: false,
-  },
-  {
-    id: '5',
-    title: 'UI Component Specification',
-    description: 'Generate detailed specifications for UI components including accessibility requirements and interaction states.',
-    tags: ['UI', 'Design', 'Accessibility'],
-    interface: 'Gemini',
-    useCount: 54,
-    lastUpdated: '1 day ago',
-    isFavorite: true,
-  },
-  {
-    id: '6',
-    title: 'Testing Framework Setup',
-    description: 'Instructions for setting up comprehensive testing frameworks with examples for different languages.',
-    tags: ['Testing', 'QA', 'Framework'],
-    interface: 'VS Code',
-    useCount: 42,
-    lastUpdated: '4 days ago',
-    isFavorite: false,
-  }
-];
-
-const Prompts: React.FC = () => {
+const PromptsPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInterface, setSelectedInterface] = useState('all');
-  const [selectedUseCase, setSelectedUseCase] = useState('all');
+  const [selectedDomain, setSelectedDomain] = useState('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState('all');
-  
-  const handleFilterChange = (filter: string, value: string) => {
-    if (filter === 'interface') {
-      setSelectedInterface(value);
-    } else if (filter === 'useCase') {
-      setSelectedUseCase(value);
+  const [page, setPage] = useState(0);
+  const [pageSize] = useState(20);
+
+  useEffect(() => {
+    fetchPrompts();
+  }, [activeTab, selectedInterface, selectedDomain, selectedTags, page, searchTerm]);
+
+  const fetchPrompts = async () => {
+    try {
+      setLoading(true);
+      
+      // Build filters based on current state
+      const filters: PromptFiltersType = {
+        search: searchTerm || undefined,
+        page,
+        pageSize,
+        onlyFavorites: activeTab === 'favorites'
+      };
+      
+      // Add interface filter if not "all"
+      if (selectedInterface !== 'all') {
+        filters.interfaces = [selectedInterface as Enums<'ai_interface'>];
+      }
+      
+      // Add domain filter if not "all"
+      if (selectedDomain !== 'all') {
+        filters.domains = [selectedDomain as Enums<'prompt_domain'>];
+      }
+      
+      // Add tags filter if any selected
+      if (selectedTags.length > 0) {
+        filters.tags = selectedTags;
+      }
+
+      const result = await searchPrompts(filters);
+      setPrompts(result.prompts);
+      setTotalCount(result.totalCount);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching prompts:', error);
+      setLoading(false);
     }
   };
-  
-  // Filter prompts based on search and filters
-  const filteredPrompts = mockPrompts.filter(prompt => {
-    const matchesSearch = 
-      searchTerm === '' ||
-      prompt.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prompt.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      prompt.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const handleFilterChange = (filter: string, value: string) => {
+    // Reset page when changing filters
+    setPage(0);
     
-    const matchesInterface = 
-      selectedInterface === 'all' ||
-      prompt.interface.toLowerCase() === selectedInterface.toLowerCase();
+    if (filter === 'interface') {
+      setSelectedInterface(value);
+    } else if (filter === 'domain') {
+      setSelectedDomain(value);
+    }
+  };
+
+  const handleTagToggle = (tag: string) => {
+    // Reset page when changing tags
+    setPage(0);
     
-    // In a real app, you'd have a useCase property to filter by
-    const matchesUseCase = selectedUseCase === 'all';
-    
-    const matchesTab = 
-      activeTab === 'all' || 
-      (activeTab === 'favorites' && prompt.isFavorite);
-    
-    return matchesSearch && matchesInterface && matchesUseCase && matchesTab;
-  });
+    if (selectedTags.includes(tag)) {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    } else {
+      setSelectedTags([...selectedTags, tag]);
+    }
+  };
+
+  const handleCreatePrompt = () => {
+    navigate('/prompts/create');
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only search when user stops typing (debounce)
+    const value = e.target.value;
+    setSearchTerm(value);
+    setPage(0); // Reset to first page on new search
+  };
 
   return (
     <div className="space-y-6">
@@ -114,33 +103,33 @@ const Prompts: React.FC = () => {
           <h1 className="heading-2">Prompts Library</h1>
           <p className="text-muted-foreground">Discover and use prompts for various AI interfaces and use cases</p>
         </div>
-        <Button>
+        <Button onClick={handleCreatePrompt}>
           <Plus className="mr-2 h-4 w-4" />
           Create Prompt
         </Button>
       </div>
       
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="all" className="flex items-center gap-1.5">
+            <BookOpen className="h-4 w-4" />
+            <span>All Prompts</span>
+          </TabsTrigger>
+          <TabsTrigger value="favorites" className="flex items-center gap-1.5">
+            <BookOpen className="h-4 w-4" />
+            <span>Favorites</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full sm:w-auto">
-          <TabsList>
-            <TabsTrigger value="all" className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
-              <span>All Prompts</span>
-            </TabsTrigger>
-            <TabsTrigger value="favorites" className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
-              <span>Favorites</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-        
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search prompts..."
             className="pl-8"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
           />
         </div>
       </div>
@@ -148,24 +137,55 @@ const Prompts: React.FC = () => {
       <PromptFilters 
         onFilterChange={handleFilterChange} 
         selectedInterface={selectedInterface}
-        selectedUseCase={selectedUseCase}
+        selectedDomain={selectedDomain}
+        selectedTags={selectedTags}
+        onTagToggle={handleTagToggle}
       />
       
-      {filteredPrompts.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="mt-2">Loading prompts...</p>
+        </div>
+      ) : prompts.length === 0 ? (
         <div className="text-center py-12 border rounded-lg bg-muted/40">
           <BookOpen className="h-12 w-12 mx-auto text-muted-foreground" />
           <h3 className="mt-4 text-lg font-medium">No prompts found</h3>
           <p className="text-muted-foreground">Try adjusting your filters or create a new prompt</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPrompts.map(prompt => (
-            <PromptCard key={prompt.id} {...prompt} />
-          ))}
+        <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {prompts.map(prompt => (
+              <PromptCard key={prompt.id} {...prompt} />
+            ))}
+          </div>
+          
+          {totalCount > pageSize && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={() => setPage(Math.max(0, page - 1))}
+                disabled={page === 0}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {page + 1} of {Math.ceil(totalCount / pageSize)}
+              </span>
+              <Button 
+                variant="outline" 
+                onClick={() => setPage(Math.min(Math.ceil(totalCount / pageSize) - 1, page + 1))}
+                disabled={(page + 1) * pageSize >= totalCount}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 };
 
-export default Prompts;
+export default PromptsPage;
