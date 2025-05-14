@@ -29,6 +29,7 @@ const PromptsPage: React.FC = () => {
   const fetchPrompts = async () => {
     try {
       setLoading(true);
+      console.log('Fetching prompts with current filters:');
       
       // Build filters based on current state
       const filters: PromptFiltersType = {
@@ -41,19 +42,24 @@ const PromptsPage: React.FC = () => {
       // Add interface filter if not "all"
       if (selectedInterface !== 'all') {
         filters.interfaces = [selectedInterface as Enums<'ai_interface'>];
+        console.log(`Filtering by interface: ${selectedInterface}`);
       }
       
       // Add domain filter if not "all"
       if (selectedDomain !== 'all') {
         filters.domains = [selectedDomain as Enums<'prompt_domain'>];
+        console.log(`Filtering by domain: ${selectedDomain}`);
       }
       
       // Add tags filter if any selected
       if (selectedTags.length > 0) {
         filters.tags = selectedTags;
+        console.log(`Filtering by tags: ${selectedTags.join(', ')}`);
       }
 
+      console.log('Final filter object:', filters);
       const result = await searchPrompts(filters);
+      console.log(`Received ${result.prompts.length} prompts of ${result.totalCount} total`);
       setPrompts(result.prompts);
       setTotalCount(result.totalCount);
       setLoading(false);
@@ -66,6 +72,7 @@ const PromptsPage: React.FC = () => {
   const handleFilterChange = (filter: string, value: string) => {
     // Reset page when changing filters
     setPage(0);
+    console.log(`Filter changed: ${filter} = ${value}`);
     
     if (filter === 'interface') {
       setSelectedInterface(value);
@@ -86,6 +93,7 @@ const PromptsPage: React.FC = () => {
   };
 
   const handleCreatePrompt = () => {
+    console.log('Navigating to Create Prompt page');
     navigate('/prompts/create');
   };
 

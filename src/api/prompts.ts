@@ -504,6 +504,7 @@ export async function deletePrompt(id: string): Promise<void> {
  * Get available filters for prompts
  */
 export async function getPromptFilters() {
+  console.log('Fetching available prompt filters');
   // Get all used interfaces
   const { data: interfaces, error: interfacesError } = await supabase
     .from('prompt_interfaces')
@@ -536,11 +537,19 @@ export async function getPromptFilters() {
     throw tagsError;
   }
 
-  return {
+  const result = {
     interfaces: interfaces?.map(i => i.interface) || [],
     domains: domains?.map(d => d.domain) || [],
     tags: tags || []
   };
+  
+  console.log('Available filters:', {
+    interfaces: result.interfaces,
+    domains: result.domains,
+    tagCount: result.tags.length
+  });
+  
+  return result;
 }
 
 /**

@@ -35,14 +35,14 @@ const App = () => (
               <Prompts />
             </AppLayout>
           } />
-          <Route path="/prompts/:id" element={
-            <AppLayout>
-              <PromptDetail />
-            </AppLayout>
-          } />
           <Route path="/prompts/create" element={
             <AppLayout>
               <PromptForm />
+            </AppLayout>
+          } />
+          <Route path="/prompts/:id" element={
+            <AppLayout>
+              <PromptDetail />
             </AppLayout>
           } />
           <Route path="/prompts/edit/:id" element={

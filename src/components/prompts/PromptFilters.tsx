@@ -36,7 +36,8 @@ const FilterSelect: React.FC<{
   value: string;
   onChange: (value: string) => void;
   label: string;
-}> = ({ options, value, onChange, label }) => {
+  disabled?: boolean;
+}> = ({ options, value, onChange, label, disabled = false }) => {
   const [open, setOpen] = React.useState(false);
   const selectedOption = options.find(option => option.value === value);
 
@@ -48,6 +49,7 @@ const FilterSelect: React.FC<{
           role="combobox"
           aria-expanded={open}
           className="justify-between"
+          disabled={disabled}
         >
           {value === 'all' ? label : selectedOption?.label}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
