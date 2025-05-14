@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Prompts from "@/pages/Prompts";
+import PromptDetail from "@/pages/PromptDetail";
+import PromptForm from "@/components/prompts/PromptForm";
 import Tools from "@/pages/Tools";
 import MCPRepository from "@/pages/MCPRepository";
 import AIIntelligence from "@/pages/AIIntelligence";
@@ -31,6 +33,21 @@ const App = () => (
           <Route path="/prompts" element={
             <AppLayout>
               <Prompts />
+            </AppLayout>
+          } />
+          <Route path="/prompts/:id" element={
+            <AppLayout>
+              <PromptDetail />
+            </AppLayout>
+          } />
+          <Route path="/prompts/create" element={
+            <AppLayout>
+              <PromptForm />
+            </AppLayout>
+          } />
+          <Route path="/prompts/edit/:id" element={
+            <AppLayout>
+              <PromptForm />
             </AppLayout>
           } />
           <Route path="/tools" element={
