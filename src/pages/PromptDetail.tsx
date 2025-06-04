@@ -33,7 +33,10 @@ import {
   Trash,
   Link, 
 } from 'lucide-react';
-import { getPromptById, toggleFavorite, recordPromptUsage, deletePrompt, getPromptVersions, getRelatedPrompts } from '@/api/prompts';
+import { getPromptById, toggleFavorite, recordPromptUsage, deletePrompt, getPromptVersions, getRelatedPrompts, addPromptRelation, removePromptRelation, searchPrompts } from '@/api/prompts';
+import { Input } from '@/components/ui/input';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Constants, Enums } from '@/integrations/supabase/types';
 import { formatDistanceToNow } from 'date-fns';
 
 const PromptDetailPage: React.FC = () => {
@@ -45,6 +48,9 @@ const PromptDetailPage: React.FC = () => {
     sources: [],
     targets: []
   });
+  const [relationSearch, setRelationSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [newRelationType, setNewRelationType] = useState<Enums<'relation_type'>>('DEPENDS_ON');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('content');
   const [deleting, setDeleting] = useState(false);
@@ -167,6 +173,43 @@ const PromptDetailPage: React.FC = () => {
       console.error('Error deleting prompt:', error);
       toast.error('Failed to delete prompt');
       setDeleting(false);
+    }
+  };
+
+  const handleRelationSearch = async (value: string) => {
+    setRelationSearch(value);
+    if (value.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const result = await searchPrompts({ search: value, pageSize: 5 });
+      setSearchResults(result.prompts.filter(p => p.id !== id));
+    } catch (error) {
+      console.error('Error searching prompts for relation:', error);
+    }
+  };
+
+  const handleAddRelation = async (targetId: string) => {
+    if (!id) return;
+    try {
+      await addPromptRelation(id, targetId, newRelationType);
+      setRelationSearch('');
+      setSearchResults([]);
+      fetchRelatedPrompts();
+    } catch (error) {
+      console.error('Error adding relation:', error);
+      toast.error('Failed to add relation');
+    }
+  };
+
+  const handleRemoveRelation = async (relationId: string) => {
+    try {
+      await removePromptRelation(relationId);
+      fetchRelatedPrompts();
+    } catch (error) {
+      console.error('Error removing relation:', error);
+      toast.error('Failed to remove relation');
     }
   };
 
@@ -399,32 +442,41 @@ const PromptDetailPage: React.FC = () => {
                       <h3 className="font-medium mb-2">Sources (prompts that this prompt depends on)</h3>
                       <div className="space-y-2">
                         {relatedPrompts.sources.map((source) => (
-                          <div key={source.prompts.id} className="border rounded-md p-3">
+                          <div key={source.id} className="border rounded-md p-3">
                             <div className="flex justify-between items-start">
                               <div>
-                                <h4 className="font-medium">{source.prompts.title}</h4>
+                                <h4 className="font-medium">{source.prompt.title}</h4>
                                 <p className="text-sm text-muted-foreground line-clamp-1">
-                                  {source.prompts.description}
+                                  {source.prompt.description}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
                                   <Badge variant="outline" className="text-xs">
                                     {source.relation_type}
                                   </Badge>
                                   <Badge variant="secondary" className="text-xs">
-                                    {source.prompts.type}
+                                    {source.prompt.type}
                                   </Badge>
-                                  <Badge variant="outline" className={statusColors[source.prompts.status as keyof typeof statusColors] + " text-xs"}>
-                                    {source.prompts.status}
+                                  <Badge variant="outline" className={statusColors[source.prompt.status as keyof typeof statusColors] + " text-xs"}>
+                                    {source.prompt.status}
                                   </Badge>
                                 </div>
                               </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => navigate(`/prompts/${source.prompts.id}`)}
-                              >
-                                View
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/prompts/${source.prompt.id}`)}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveRelation(source.id)}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -437,32 +489,41 @@ const PromptDetailPage: React.FC = () => {
                       <h3 className="font-medium mb-2">Targets (prompts that depend on this prompt)</h3>
                       <div className="space-y-2">
                         {relatedPrompts.targets.map((target) => (
-                          <div key={target.prompts.id} className="border rounded-md p-3">
+                          <div key={target.id} className="border rounded-md p-3">
                             <div className="flex justify-between items-start">
                               <div>
-                                <h4 className="font-medium">{target.prompts.title}</h4>
+                                <h4 className="font-medium">{target.prompt.title}</h4>
                                 <p className="text-sm text-muted-foreground line-clamp-1">
-                                  {target.prompts.description}
+                                  {target.prompt.description}
                                 </p>
                                 <div className="flex items-center gap-2 mt-1">
                                   <Badge variant="outline" className="text-xs">
                                     {target.relation_type}
                                   </Badge>
                                   <Badge variant="secondary" className="text-xs">
-                                    {target.prompts.type}
+                                    {target.prompt.type}
                                   </Badge>
-                                  <Badge variant="outline" className={statusColors[target.prompts.status as keyof typeof statusColors] + " text-xs"}>
-                                    {target.prompts.status}
+                                  <Badge variant="outline" className={statusColors[target.prompt.status as keyof typeof statusColors] + " text-xs"}>
+                                    {target.prompt.status}
                                   </Badge>
                                 </div>
                               </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => navigate(`/prompts/${target.prompts.id}`)}
-                              >
-                                View
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/prompts/${target.prompt.id}`)}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveRelation(target.id)}
+                                >
+                                  Remove
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -471,6 +532,43 @@ const PromptDetailPage: React.FC = () => {
                   )}
                 </div>
               )}
+
+              <div className="mt-6 space-y-2">
+                <h3 className="font-medium">Add Relation</h3>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Select value={newRelationType} onValueChange={setNewRelationType}>
+                    <SelectTrigger className="w-36">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Constants.public.Enums.relation_type.map(type => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Search prompts..."
+                    value={relationSearch}
+                    onChange={e => handleRelationSearch(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                {searchResults.length > 0 && (
+                  <div className="border rounded-md divide-y mt-2">
+                    {searchResults.map(result => (
+                      <button
+                        key={result.id}
+                        className="block w-full text-left p-2 hover:bg-muted"
+                        onClick={() => handleAddRelation(result.id)}
+                      >
+                        {result.title}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

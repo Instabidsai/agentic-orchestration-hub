@@ -20,21 +20,21 @@ The project is a React/TypeScript application that manages prompts and tools for
    - Move filter logic from the client to SQL-level queries.
    - Add pagination controls and a total count query.
 
-4. **Prompt relations UI**
+4. **Prompt relations UI** ✅
    - Display and manage relations from `getRelatedPrompts` in the UI.
 
 5. **Tool and MCP repositories**
    - Replace mock data with real backend tables.
    - Add creation/edit forms like the prompt form.
 
-6. **Dashboard statistics**
+6. **Dashboard statistics** ✅
    - Replace hard-coded numbers in `StatsCard` with data from queries.
 
 7. **Workflow builder (MCPRepository)**
    - Implement selecting tools and connecting them visually.
    - Persist the configuration.
 
-8. **Testing and CI**
+8. **Testing and CI** ✅
    - Extend `vitest` coverage to API utilities and React components.
    - Add a GitHub Actions workflow to run tests.
 

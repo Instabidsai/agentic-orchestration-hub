@@ -1,7 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookOpen, Wrench, Database, Rss } from 'lucide-react';
+import { getDashboardStats, DashboardStats } from '@/api/stats';
 
 interface StatCardProps {
   title: string;
@@ -36,35 +37,40 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, growth, positiv
 };
 
 const StatsCard: React.FC = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    prompts: 0,
+    tools: 0,
+    mcps: 0,
+    articles: 0
+  });
+
+  useEffect(() => {
+    getDashboardStats()
+      .then(setStats)
+      .catch(err => console.error('Failed to fetch dashboard stats', err));
+  }, []);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard 
-        title="Total Prompts" 
-        value="142" 
+      <StatCard
+        title="Total Prompts"
+        value={stats.prompts}
         icon={<BookOpen className="h-4 w-4" />}
-        growth="12%"
-        positive={true}
       />
-      <StatCard 
-        title="Tools Documented" 
-        value="53" 
+      <StatCard
+        title="Tools Documented"
+        value={stats.tools}
         icon={<Wrench className="h-4 w-4" />}
-        growth="8%"
-        positive={true}
       />
-      <StatCard 
-        title="MCP Components" 
-        value="27" 
+      <StatCard
+        title="MCP Components"
+        value={stats.mcps}
         icon={<Database className="h-4 w-4" />}
-        growth="5%"
-        positive={true}
       />
-      <StatCard 
-        title="Intelligence Articles" 
-        value="35" 
+      <StatCard
+        title="Intelligence Articles"
+        value={stats.articles}
         icon={<Rss className="h-4 w-4" />}
-        growth="3%"
-        positive={false}
       />
     </div>
   );

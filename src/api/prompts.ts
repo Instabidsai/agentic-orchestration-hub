@@ -596,16 +596,17 @@ export async function getRelatedPrompts(promptId: string) {
   // Get prompts that are sources to this prompt
   const { data: sourcesData, error: sourcesError } = await supabase
     .from('prompt_relations')
-    .select(`
+    .select(
+      `id,
       relation_type,
       prompts:source_prompt_id (
-        id, 
+        id,
         title,
         description,
         type,
         status
-      )
-    `)
+      )`
+    )
     .eq('target_prompt_id', promptId);
 
   if (sourcesError) {
@@ -616,16 +617,17 @@ export async function getRelatedPrompts(promptId: string) {
   // Get prompts that this prompt targets
   const { data: targetsData, error: targetsError } = await supabase
     .from('prompt_relations')
-    .select(`
+    .select(
+      `id,
       relation_type,
       prompts:target_prompt_id (
-        id, 
+        id,
         title,
         description,
         type,
         status
-      )
-    `)
+      )`
+    )
     .eq('source_prompt_id', promptId);
 
   if (targetsError) {
@@ -634,7 +636,48 @@ export async function getRelatedPrompts(promptId: string) {
   }
 
   return {
-    sources: sourcesData || [],
-    targets: targetsData || []
+    sources: (sourcesData || []).map(r => ({
+      id: r.id,
+      relation_type: r.relation_type,
+      prompt: r.prompts
+    })),
+    targets: (targetsData || []).map(r => ({
+      id: r.id,
+      relation_type: r.relation_type,
+      prompt: r.prompts
+    }))
   };
+}
+
+/**
+ * Create a relation between two prompts
+ */
+export async function addPromptRelation(
+  sourcePromptId: string,
+  targetPromptId: string,
+  relationType: Enums<'relation_type'>
+) {
+  const { error } = await supabase.from('prompt_relations').insert({
+    source_prompt_id: sourcePromptId,
+    target_prompt_id: targetPromptId,
+    relation_type: relationType
+  });
+  if (error) {
+    console.error('Error creating prompt relation:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a prompt relation
+ */
+export async function removePromptRelation(relationId: string) {
+  const { error } = await supabase
+    .from('prompt_relations')
+    .delete()
+    .eq('id', relationId);
+  if (error) {
+    console.error('Error deleting prompt relation:', error);
+    throw error;
+  }
 }
