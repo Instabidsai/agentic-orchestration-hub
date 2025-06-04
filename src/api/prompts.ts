@@ -596,8 +596,9 @@ export async function getRelatedPrompts(promptId: string) {
   // Get prompts that are sources to this prompt
   const { data: sourcesData, error: sourcesError } = await supabase
     .from('prompt_relations')
-    .select(
-      `id,
+    .select(`
+      id,
+
       relation_type,
       prompts:source_prompt_id (
         id,
@@ -653,13 +654,13 @@ export async function getRelatedPrompts(promptId: string) {
  * Create a relation between two prompts
  */
 export async function addPromptRelation(
-  sourcePromptId: string,
-  targetPromptId: string,
+  sourceId: string,
+  targetId: string,
   relationType: Enums<'relation_type'>
-) {
+): Promise<void> {
   const { error } = await supabase.from('prompt_relations').insert({
-    source_prompt_id: sourcePromptId,
-    target_prompt_id: targetPromptId,
+    source_prompt_id: sourceId,
+    target_prompt_id: targetId,
     relation_type: relationType
   });
   if (error) {
@@ -669,13 +670,12 @@ export async function addPromptRelation(
 }
 
 /**
- * Delete a prompt relation
+
+ * Delete a prompt relation by id
  */
-export async function removePromptRelation(relationId: string) {
-  const { error } = await supabase
-    .from('prompt_relations')
-    .delete()
-    .eq('id', relationId);
+export async function deletePromptRelation(id: string): Promise<void> {
+  const { error } = await supabase.from('prompt_relations').delete().eq('id', id);
+
   if (error) {
     console.error('Error deleting prompt relation:', error);
     throw error;
