@@ -5,9 +5,10 @@ import PromptFilters from '@/components/prompts/PromptFilters';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Plus, BookOpen, Search } from 'lucide-react';
+import { Plus, BookOpen, Search, Download } from 'lucide-react';
 import { searchPrompts, Prompt, PromptFilters as PromptFiltersType } from '@/api/prompts';
 import { Enums } from '@/integrations/supabase/types';
+import { downloadJSON } from '@/lib/export';
 
 const PromptsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -97,6 +98,25 @@ const PromptsPage: React.FC = () => {
     navigate('/prompts/create');
   };
 
+  const handleExport = async () => {
+    try {
+      const filters: PromptFiltersType = {
+        search: searchTerm || undefined,
+        interfaces: selectedInterface !== 'all' ? [selectedInterface as Enums<'ai_interface'>] : undefined,
+        domains: selectedDomain !== 'all' ? [selectedDomain as Enums<'prompt_domain'>] : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        onlyFavorites: activeTab === 'favorites',
+        page: 0,
+        pageSize: 1000
+      };
+
+      const result = await searchPrompts(filters);
+      downloadJSON(result.prompts, 'prompts.json');
+    } catch (err) {
+      console.error('Error exporting prompts:', err);
+    }
+  };
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only search when user stops typing (debounce)
     const value = e.target.value;
@@ -111,10 +131,16 @@ const PromptsPage: React.FC = () => {
           <h1 className="heading-2">Prompts Library</h1>
           <p className="text-muted-foreground">Discover and use prompts for various AI interfaces and use cases</p>
         </div>
-        <Button onClick={handleCreatePrompt}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create Prompt
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleCreatePrompt}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Prompt
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            Export JSON
+          </Button>
+        </div>
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab}>
