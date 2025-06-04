@@ -20,7 +20,7 @@ The project is a React/TypeScript application that manages prompts and tools for
    - Move filter logic from the client to SQL-level queries.
    - Add pagination controls and a total count query.
 
-4. **Prompt relations UI**
+4. **Prompt relations UI** ✅
    - Display and manage relations from `getRelatedPrompts` in the UI.
 
 5. **Tool and MCP repositories**
@@ -34,16 +34,16 @@ The project is a React/TypeScript application that manages prompts and tools for
    - Implement selecting tools and connecting them visually.
    - Persist the configuration.
 
-8. **Testing and CI**
+8. **Testing and CI** ✅
    - Extend `vitest` coverage to API utilities and React components.
-   - Add a GitHub Actions workflow to run tests.
+   - Add a GitHub Actions workflow to run tests. ✅
 
 9. **Styling and responsiveness**
    - Audit mobile layout and add dark/light theme support if desired.
 
-10. **Documentation**
+10. **Documentation** ✅
    - Expand `README.md` with setup instructions and contribution guidelines.
-   - Document components and APIs in this `docs/` directory.
+   - Document components and APIs in this `docs/` directory. ✅
 
 Agents can pick any of the tasks above and implement them. Be sure to run `npm test` before committing.
 

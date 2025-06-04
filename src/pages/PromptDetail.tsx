@@ -15,12 +15,28 @@ import {
   TabsTrigger 
 } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { 
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, 
@@ -28,12 +44,14 @@ import {
   Edit, 
   Star, 
   History, 
-  Tag, 
+  Tag,
   FileText,
   Trash,
-  Link, 
+  X,
+  Link,
 } from 'lucide-react';
-import { getPromptById, toggleFavorite, recordPromptUsage, deletePrompt, getPromptVersions, getRelatedPrompts } from '@/api/prompts';
+import { getPromptById, toggleFavorite, recordPromptUsage, deletePrompt, getPromptVersions, getRelatedPrompts, addPromptRelation, deletePromptRelation } from '@/api/prompts';
+import { Enums } from '@/integrations/supabase/types';
 import { formatDistanceToNow } from 'date-fns';
 
 const PromptDetailPage: React.FC = () => {
@@ -48,6 +66,10 @@ const PromptDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('content');
   const [deleting, setDeleting] = useState(false);
+  const [relationDialogOpen, setRelationDialogOpen] = useState(false);
+  const [relationTargetId, setRelationTargetId] = useState('');
+  const [relationType, setRelationType] = useState<Enums<'relation_type'>>('DEPENDS_ON');
+  const [relationDirection, setRelationDirection] = useState<'source' | 'target'>('source');
 
   useEffect(() => {
     if (id) {
@@ -167,6 +189,33 @@ const PromptDetailPage: React.FC = () => {
       console.error('Error deleting prompt:', error);
       toast.error('Failed to delete prompt');
       setDeleting(false);
+    }
+  };
+
+  const handleCreateRelation = async () => {
+    if (!prompt || !relationTargetId) return;
+    try {
+      const sourceId = relationDirection === 'source' ? relationTargetId : prompt.id;
+      const targetId = relationDirection === 'source' ? prompt.id : relationTargetId;
+      await addPromptRelation(sourceId, targetId, relationType);
+      toast.success('Relation added');
+      setRelationDialogOpen(false);
+      setRelationTargetId('');
+      fetchRelatedPrompts();
+    } catch (error) {
+      console.error('Error creating relation:', error);
+      toast.error('Failed to create relation');
+    }
+  };
+
+  const handleDeleteRelation = async (relationId: string) => {
+    try {
+      await deletePromptRelation(relationId);
+      toast.success('Relation removed');
+      fetchRelatedPrompts();
+    } catch (error) {
+      console.error('Error deleting relation:', error);
+      toast.error('Failed to remove relation');
     }
   };
 
@@ -385,6 +434,11 @@ const PromptDetailPage: React.FC = () => {
         <TabsContent value="related" className="mt-4">
           <Card>
             <CardContent className="pt-6">
+              <div className="flex justify-end mb-4">
+                <Button size="sm" onClick={() => setRelationDialogOpen(true)}>
+                  Add Relation
+                </Button>
+              </div>
               {relatedPrompts.sources.length === 0 && relatedPrompts.targets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8">
                   <Link className="h-8 w-8 text-muted-foreground mb-2" />
@@ -418,13 +472,22 @@ const PromptDetailPage: React.FC = () => {
                                   </Badge>
                                 </div>
                               </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => navigate(`/prompts/${source.prompts.id}`)}
-                              >
-                                View
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/prompts/${source.prompts.id}`)}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteRelation(source.id)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -456,13 +519,22 @@ const PromptDetailPage: React.FC = () => {
                                   </Badge>
                                 </div>
                               </div>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => navigate(`/prompts/${target.prompts.id}`)}
-                              >
-                                View
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => navigate(`/prompts/${target.prompts.id}`)}
+                                >
+                                  View
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteRelation(target.id)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -475,6 +547,47 @@ const PromptDetailPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={relationDialogOpen} onOpenChange={setRelationDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Relation</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              placeholder="Related prompt ID"
+              value={relationTargetId}
+              onChange={(e) => setRelationTargetId(e.target.value)}
+            />
+            <Select value={relationType} onValueChange={(v) => setRelationType(v as Enums<'relation_type'>)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Relation type" />
+              </SelectTrigger>
+              <SelectContent>
+                {(['DEPENDS_ON','USED_BY','RELATES_TO'] as Enums<'relation_type'>[]).map(rt => (
+                  <SelectItem key={rt} value={rt}>
+                    {rt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <RadioGroup value={relationDirection} onValueChange={(v) => setRelationDirection(v as 'source' | 'target')} className="flex gap-4">
+              <label className="flex items-center gap-2 text-sm">
+                <RadioGroupItem value="source" />
+                <span>This prompt depends on target</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <RadioGroupItem value="target" />
+                <span>Target depends on this prompt</span>
+              </label>
+            </RadioGroup>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRelationDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreateRelation}>Add</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
