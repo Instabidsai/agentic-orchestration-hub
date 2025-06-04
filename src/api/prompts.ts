@@ -472,10 +472,24 @@ export async function recordPromptUsage(
   }
 
   // 2. Increment the usage count and update last_used_at
+  // Retrieve current usage count
+  const { data: promptData, error: fetchError } = await supabase
+    .from('prompts')
+    .select('use_count')
+    .eq('id', promptId)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching prompt usage count:', fetchError);
+    return;
+  }
+
+  const newCount = (promptData?.use_count || 0) + 1;
+
   const { error: countError } = await supabase
     .from('prompts')
-    .update({ 
-      use_count: supabase.rpc('increment_prompt_usage', { x: 1 }),
+    .update({
+      use_count: newCount,
       last_used_at: new Date().toISOString()
     })
     .eq('id', promptId);
