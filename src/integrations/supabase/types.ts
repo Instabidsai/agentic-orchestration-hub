@@ -9,20 +9,198 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      prompts: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          content: string
+          type: Database['public']['Enums']['prompt_type']
+          status: Database['public']['Enums']['prompt_status']
+          version: number
+          created_by: string | null
+          updated_at: string | null
+          created_at: string | null
+          last_used_at: string | null
+          use_count: number
+          is_favorite: boolean
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          content: string
+          type: Database['public']['Enums']['prompt_type']
+          status?: Database['public']['Enums']['prompt_status']
+          version?: number
+          created_by?: string | null
+          updated_at?: string | null
+          created_at?: string | null
+          last_used_at?: string | null
+          use_count?: number
+          is_favorite?: boolean
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          content?: string
+          type?: Database['public']['Enums']['prompt_type']
+          status?: Database['public']['Enums']['prompt_status']
+          version?: number
+          created_by?: string | null
+          updated_at?: string | null
+          created_at?: string | null
+          last_used_at?: string | null
+          use_count?: number
+          is_favorite?: boolean
+        }
+      }
+      prompt_interfaces: {
+        Row: {
+          prompt_id: string
+          interface: Database['public']['Enums']['ai_interface']
+        }
+        Insert: {
+          prompt_id: string
+          interface: Database['public']['Enums']['ai_interface']
+        }
+        Update: {
+          prompt_id?: string
+          interface?: Database['public']['Enums']['ai_interface']
+        }
+      }
+      prompt_domains: {
+        Row: {
+          prompt_id: string
+          domain: Database['public']['Enums']['prompt_domain']
+        }
+        Insert: {
+          prompt_id: string
+          domain: Database['public']['Enums']['prompt_domain']
+        }
+        Update: {
+          prompt_id?: string
+          domain?: Database['public']['Enums']['prompt_domain']
+        }
+      }
+      tags: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+      }
+      prompt_tags: {
+        Row: {
+          prompt_id: string
+          tag_id: string
+        }
+        Insert: {
+          prompt_id: string
+          tag_id: string
+        }
+        Update: {
+          prompt_id?: string
+          tag_id?: string
+        }
+      }
+      prompt_versions: {
+        Row: {
+          id: string
+          prompt_id: string
+          version: number
+          content: string
+          change_notes: string | null
+          changed_by: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          prompt_id: string
+          version?: number
+          content: string
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          prompt_id?: string
+          version?: number
+          content?: string
+          change_notes?: string | null
+          changed_by?: string | null
+          created_at?: string | null
+        }
+      }
+      prompt_usage: {
+        Row: {
+          id: string
+          prompt_id: string
+          version: number
+          user_id: string | null
+          context: Json | null
+          result: string | null
+          used_at: string | null
+        }
+        Insert: {
+          id?: string
+          prompt_id: string
+          version: number
+          user_id?: string | null
+          context?: Json | null
+          result?: string | null
+          used_at?: string | null
+        }
+        Update: {
+          id?: string
+          prompt_id?: string
+          version?: number
+          user_id?: string | null
+          context?: Json | null
+          result?: string | null
+          used_at?: string | null
+        }
+      }
+      prompt_relations: {
+        Row: {
+          id: string
+          source_prompt_id: string
+          target_prompt_id: string
+          relation_type: Database['public']['Enums']['relation_type']
+        }
+        Insert: {
+          id?: string
+          source_prompt_id: string
+          target_prompt_id: string
+          relation_type: Database['public']['Enums']['relation_type']
+        }
+        Update: {
+          id?: string
+          source_prompt_id?: string
+          target_prompt_id?: string
+          relation_type?: Database['public']['Enums']['relation_type']
+        }
+      }
     }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
+    Views: {}
+    Functions: {}
     Enums: {
-      [_ in never]: never
+      ai_interface: 'CLAUDE' | 'GPT4' | 'OPENAI' | 'OTHER'
+      prompt_domain: 'GENERAL' | 'CODING' | 'RESEARCH' | 'OTHER'
+      prompt_type: 'FUNCTIONAL' | 'INFORMATIONAL' | 'OTHER'
+      prompt_status: 'DRAFT' | 'ACTIVE' | 'DEPRECATED'
+      relation_type: 'DEPENDS_ON' | 'USED_BY' | 'RELATES_TO'
     }
-    CompositeTypes: {
-      [_ in never]: never
-    }
+    CompositeTypes: {}
   }
 }
 
@@ -133,6 +311,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      ai_interface: ['CLAUDE', 'GPT4', 'OPENAI', 'OTHER'] as const,
+      prompt_domain: ['GENERAL', 'CODING', 'RESEARCH', 'OTHER'] as const,
+      prompt_type: ['FUNCTIONAL', 'INFORMATIONAL', 'OTHER'] as const,
+      prompt_status: ['DRAFT', 'ACTIVE', 'DEPRECATED'] as const,
+      relation_type: ['DEPENDS_ON', 'USED_BY', 'RELATES_TO'] as const
+    },
   },
 } as const
