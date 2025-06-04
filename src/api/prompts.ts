@@ -1,10 +1,15 @@
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Tables, 
-  TablesInsert, 
-  TablesUpdate, 
-  Enums 
+import {
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+  Enums
 } from '@/integrations/supabase/types';
+
+async function getCurrentUserId() {
+  const { data } = await supabase.auth.getUser();
+  return data.user?.id || null;
+}
 
 // Define detailed types that match our database schema
 export type Prompt = Tables<'prompts'> & {
@@ -62,76 +67,74 @@ export async function searchPrompts(filters: PromptFilters = {}): Promise<Prompt
     pageSize = 20
   } = filters;
 
-  // For now, use a basic query instead of the search_prompts function
   let query = supabase
     .from('prompts')
-    .select(`
-      *,
-      prompt_interfaces (interface),
-      prompt_domains (domain),
-      prompt_tags (tags:tag_id (id, name))
-    `);
+    .select(
+      `*,
+      prompt_interfaces!left(interface),
+      prompt_domains!left(domain),
+      prompt_tags!left(tag_id(id,name))`,
+      { count: 'exact' }
+    );
 
-  // Apply filters
   if (search) {
-    query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+    const like = `%${search}%`;
+    query = query.or(`title.ilike.${like},description.ilike.${like}`);
   }
-  
+
   if (types && types.length > 0) {
     query = query.in('type', types);
   }
-  
+
   if (status && status.length > 0) {
     query = query.in('status', status);
   }
-  
+
   if (createdBy) {
     query = query.eq('created_by', createdBy);
   }
-  
+
   if (onlyFavorites) {
     query = query.eq('is_favorite', true);
   }
 
-  // Order and paginate
+  if (interfaces && interfaces.length > 0) {
+    query = query.in('prompt_interfaces.interface', interfaces);
+  }
+
+  if (domains && domains.length > 0) {
+    query = query.in('prompt_domains.domain', domains);
+  }
+
+  if (tags && tags.length > 0) {
+    const { data: tagRows, error: tagErr } = await supabase
+      .from('tags')
+      .select('id')
+      .in('name', tags);
+    if (tagErr) throw tagErr;
+    const tagIds = tagRows?.map(t => t.id) || [];
+    if (tagIds.length > 0) {
+      query = query.in('prompt_tags.tag_id', tagIds);
+    } else {
+      return { prompts: [], totalCount: 0 };
+    }
+  }
+
   query = query
     .order('updated_at', { ascending: false })
     .range(page * pageSize, (page + 1) * pageSize - 1);
 
   const { data, error, count } = await query;
-
   if (error) {
     console.error('Error fetching prompts:', error);
     throw error;
   }
 
-  // Filter by interfaces, domains, and tags (in-memory for now)
-  let filteredData = data || [];
-  
-  if (interfaces && interfaces.length > 0) {
-    filteredData = filteredData.filter(item => 
-      item.prompt_interfaces.some(i => interfaces.includes(i.interface))
-    );
-  }
-  
-  if (domains && domains.length > 0) {
-    filteredData = filteredData.filter(item => 
-      item.prompt_domains.some(d => domains.includes(d.domain))
-    );
-  }
-  
-  if (tags && tags.length > 0) {
-    filteredData = filteredData.filter(item =>
-      item.prompt_tags.some(t => tags.includes(t.tags.name))
-    );
-  }
-
-  // Transform data to match our Prompt interface
-  const prompts: Prompt[] = filteredData.map(item => ({
+  const prompts: Prompt[] = (data || []).map(item => ({
     ...item,
     interfaces: item.prompt_interfaces.map(i => i.interface),
     domains: item.prompt_domains.map(d => d.domain),
-    tags: item.prompt_tags.map(t => t.tags.name)
+    tags: item.prompt_tags.map(t => t.tag_id.name)
   }));
 
   return {
@@ -176,8 +179,9 @@ export async function getPromptById(id: string): Promise<Prompt | null> {
  */
 export async function createPrompt(prompt: PromptInsert): Promise<Prompt | null> {
   // Start a transaction (simplified, but will run operations in sequence)
-  
+
   // 1. Insert main prompt record
+  const userId = await getCurrentUserId();
   const { data: newPrompt, error: promptError } = await supabase
     .from('prompts')
     .insert({
@@ -186,7 +190,7 @@ export async function createPrompt(prompt: PromptInsert): Promise<Prompt | null>
       content: prompt.content,
       type: prompt.type,
       status: prompt.status || 'DRAFT',
-      created_by: prompt.created_by,
+      created_by: prompt.created_by || userId,
       is_favorite: prompt.is_favorite || false,
       use_count: 0
     })
@@ -273,7 +277,7 @@ export async function createPrompt(prompt: PromptInsert): Promise<Prompt | null>
       version: 1,
       content: prompt.content,
       change_notes: prompt.change_notes || 'Initial version',
-      changed_by: prompt.created_by
+      changed_by: prompt.created_by || userId
     });
 
   // Fetch the complete prompt with all relationships
@@ -285,7 +289,7 @@ export async function createPrompt(prompt: PromptInsert): Promise<Prompt | null>
  */
 export async function updatePrompt(id: string, updates: PromptUpdate): Promise<Prompt | null> {
   // Prepare update object for the main prompt record
-  const promptUpdates: TablesUpdate<'prompts'> = { 
+  const promptUpdates: TablesUpdate<'prompts'> = {
     title: updates.title,
     description: updates.description,
     content: updates.content,
@@ -326,6 +330,7 @@ export async function updatePrompt(id: string, updates: PromptUpdate): Promise<P
     const newVersion = versionData ? versionData.version + 1 : 1;
 
     // Create a new version record
+    const userId = await getCurrentUserId();
     await supabase
       .from('prompt_versions')
       .insert({
@@ -333,7 +338,7 @@ export async function updatePrompt(id: string, updates: PromptUpdate): Promise<P
         version: newVersion,
         content: updates.content,
         change_notes: updates.change_notes || 'Updated prompt content',
-        changed_by: updates.changed_by
+        changed_by: updates.changed_by || userId
       });
 
     // Update the version in the main prompt record

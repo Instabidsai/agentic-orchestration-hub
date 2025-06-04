@@ -14,17 +14,21 @@ import MCPRepository from "@/pages/MCPRepository";
 import AIIntelligence from "@/pages/AIIntelligence";
 import NotFound from "@/pages/NotFound";
 import LandingPage from "@/pages/LandingPage";
+import LoginPage from "@/pages/Login";
+import { AuthProvider } from "@/hooks/use-auth";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
+  <AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/dashboard" element={
             <AppLayout>
               <Dashboard />
@@ -65,6 +69,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
+</AuthProvider>
 );
 
 export default App;
