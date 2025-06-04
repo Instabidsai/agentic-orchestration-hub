@@ -41,7 +41,7 @@ The project is a React/TypeScript application that manages prompts and tools for
 9. **Styling and responsiveness**
    - Audit mobile layout and add dark/light theme support if desired.
 
-10. **Documentation**
+10. **Documentation** ✅
    - Expand `README.md` with setup instructions and contribution guidelines.
    - Document components and APIs in this `docs/` directory.
 
