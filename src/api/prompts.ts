@@ -598,7 +598,6 @@ export async function getRelatedPrompts(promptId: string) {
     .from('prompt_relations')
     .select(`
       id,
-
       relation_type,
       prompts:source_prompt_id (
         id,
