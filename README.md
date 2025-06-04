@@ -2,6 +2,29 @@
 
 ## Project info
 
+## Setup
+
+Clone the repository and install dependencies:
+
+```sh
+git clone <YOUR_GIT_URL>
+cd agentic-orchestration-hub
+npm install
+```
+
+To start the development server:
+
+```sh
+npm run dev
+```
+
+Run the test suite and linter before committing:
+
+```sh
+npm run lint
+npm test
+```
+
 ## Development tasks
 
 For a list of planned improvements and open tasks, see [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md). Agents can pick one of these tasks and submit a PR. Remember to run `npm test` before committing.
@@ -68,6 +91,14 @@ This project is built with:
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/7198daf8-e103-4509-a8ea-a2d988812a1c) and click on Share -> Publish.
+
+## Contributing
+
+1. Fork the repository and create a new branch for your feature.
+2. Run `npm install` if you haven't already.
+3. Implement your changes and add tests where appropriate.
+4. Run `npm run lint` and `npm test` to ensure everything passes.
+5. Open a pull request describing your changes.
 
 ## Can I connect a custom domain to my Lovable project?
 
