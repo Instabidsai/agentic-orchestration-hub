@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -104,6 +105,7 @@ const workflowTemplates = [
 ];
 
 const MCPRepository: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   
@@ -311,7 +313,7 @@ const MCPRepository: React.FC = () => {
                 <Plus className="h-6 w-6 text-muted-foreground" />
               </div>
             </div>
-            <Button>
+            <Button onClick={() => navigate('/mcp/builder')}>
               <Plus className="mr-2 h-4 w-4" />
               Create New Workflow
             </Button>

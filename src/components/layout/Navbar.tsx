@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger 
 } from '../ui/dropdown-menu';
 import { Input } from '../ui/input';
+import ThemeToggle from '../ui/theme-toggle';
 
 const Navbar: React.FC = () => {
   return (
@@ -41,6 +42,7 @@ const Navbar: React.FC = () => {
         </div>
         
         <div className="flex items-center ml-auto gap-4">
+          <ThemeToggle />
           <Button variant="outline" size="icon" className="relative">
             <BellDot className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] text-white flex items-center justify-center">

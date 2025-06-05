@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Wrench, Database, Rss, Settings } from 'lucide-react';
+import { Home, BookOpen, Wrench, Database, Rss, Settings, Layout } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ const navItems = [
   { icon: BookOpen, label: 'Prompts Library', path: '/prompts' },
   { icon: Wrench, label: 'Tools Catalog', path: '/tools' },
   { icon: Database, label: 'MCP Repository', path: '/mcp' },
+  { icon: Layout, label: 'Workflows', path: '/workflows' },
   { icon: Rss, label: 'AI Intelligence', path: '/intelligence' },
 ];
 

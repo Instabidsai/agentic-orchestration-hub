@@ -10,13 +10,15 @@ interface ToolsHeaderProps {
   onSearch: (searchTerm: string) => void;
   onViewChange: (view: string) => void;
   currentView: string;
+  onAdd?: () => void;
 }
 
 const ToolsHeader: React.FC<ToolsHeaderProps> = ({
   totalTools,
   onSearch,
   onViewChange,
-  currentView
+  currentView,
+  onAdd
 }) => {
   return (
     <div className="mb-6 space-y-4">
@@ -25,7 +27,7 @@ const ToolsHeader: React.FC<ToolsHeaderProps> = ({
           <h1 className="heading-2">Tools Catalog</h1>
           <p className="text-muted-foreground">{totalTools} tools documented and organized by category</p>
         </div>
-        <Button>
+        <Button onClick={onAdd}>
           <Plus className="mr-2 h-4 w-4" />
           Add New Tool
         </Button>
