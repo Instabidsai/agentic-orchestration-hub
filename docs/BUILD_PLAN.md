@@ -23,7 +23,7 @@ The project is a React/TypeScript application that manages prompts and tools for
 4. **Prompt relations UI** ✅
    - Display and manage relations from `getRelatedPrompts` in the UI.
 
-5. **Tool and MCP repositories**
+5. **Tool and MCP repositories** ✅
    - Replace mock data with real backend tables.
    - Add creation/edit forms like the prompt form.
 

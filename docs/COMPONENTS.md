@@ -15,6 +15,8 @@ This project uses React with shadcn-ui components. Below are a few key component
   Shows details for a single tool such as category and complexity.
 - **ToolsHeader** (`src/components/tools/ToolsHeader.tsx`)
   Search and view controls for the Tools page.
+- **ToolForm** (`src/components/tools/ToolForm.tsx`)
+  Form for creating and editing tool records.
 
 ## Dashboard
 - **StatsCard** (`src/components/dashboard/StatsCard.tsx`)

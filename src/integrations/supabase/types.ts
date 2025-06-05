@@ -190,6 +190,47 @@ export type Database = {
           relation_type?: Database['public']['Enums']['relation_type']
         }
       }
+      tools: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          category: string | null
+          complexity: Database['public']['Enums']['tool_complexity']
+          last_updated: string | null
+          integration: string | null
+          url: string | null
+          is_favorite: boolean
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          category?: string | null
+          complexity?: Database['public']['Enums']['tool_complexity']
+          last_updated?: string | null
+          integration?: string | null
+          url?: string | null
+          is_favorite?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          category?: string | null
+          complexity?: Database['public']['Enums']['tool_complexity']
+          last_updated?: string | null
+          integration?: string | null
+          url?: string | null
+          is_favorite?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
     }
     Views: {}
     Functions: {}
@@ -316,7 +357,8 @@ export const Constants = {
       prompt_domain: ['GENERAL', 'CODING', 'RESEARCH', 'OTHER'] as const,
       prompt_type: ['FUNCTIONAL', 'INFORMATIONAL', 'OTHER'] as const,
       prompt_status: ['DRAFT', 'ACTIVE', 'DEPRECATED'] as const,
-      relation_type: ['DEPENDS_ON', 'USED_BY', 'RELATES_TO'] as const
+      relation_type: ['DEPENDS_ON', 'USED_BY', 'RELATES_TO'] as const,
+      tool_complexity: ['BEGINNER', 'INTERMEDIATE', 'ADVANCED'] as const
     },
   },
 } as const

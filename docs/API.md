@@ -17,4 +17,11 @@ This project communicates with Supabase through a small API layer located in `sr
 ## Stats API (`src/api/stats.ts`)
 - `getDashboardStats()` – returns counts for prompts, tools, MCP components and articles.
 
+## Tools API (`src/api/tools.ts`)
+- `getTools()` – list all tools ordered by last update.
+- `getToolById(id)` – fetch a single tool record.
+- `createTool(tool)` – insert a new tool.
+- `updateTool(id, updates)` – update an existing tool.
+- `deleteTool(id)` – remove a tool.
+
 These helpers return raw Supabase query results and may throw errors on failure.
