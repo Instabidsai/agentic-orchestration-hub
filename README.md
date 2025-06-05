@@ -18,6 +18,8 @@ To start the development server:
 npm run dev
 ```
 
+You can switch between light and dark themes using the toggle button in the app header.
+
 Run the test suite and linter before committing:
 
 ```sh

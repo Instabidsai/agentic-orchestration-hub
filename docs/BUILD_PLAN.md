@@ -38,7 +38,7 @@ The project is a React/TypeScript application that manages prompts and tools for
    - Extend `vitest` coverage to API utilities and React components.
    - Add a GitHub Actions workflow to run tests. ✅
 
-9. **Styling and responsiveness**
+9. **Styling and responsiveness** ✅
    - Audit mobile layout and add dark/light theme support if desired.
 
 10. **Documentation** ✅
