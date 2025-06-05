@@ -231,6 +231,32 @@ export type Database = {
           updated_at?: string | null
         }
       }
+      workflows: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          tool_ids: string[]
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          tool_ids: string[]
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          tool_ids?: string[]
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
     }
     Views: {}
     Functions: {}

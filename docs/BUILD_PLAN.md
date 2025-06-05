@@ -30,7 +30,7 @@ The project is a React/TypeScript application that manages prompts and tools for
 6. **Dashboard statistics** ✅
    - Replace hard-coded numbers in `StatsCard` with data from queries.
 
-7. **Workflow builder (MCPRepository)**
+7. **Workflow builder (MCPRepository)** ✅
    - Implement selecting tools and connecting them visually.
    - Persist the configuration.
 

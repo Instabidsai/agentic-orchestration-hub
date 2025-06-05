@@ -13,6 +13,7 @@ import PromptForm from "@/components/prompts/PromptForm";
 import Tools from "@/pages/Tools";
 import ToolForm from "@/components/tools/ToolForm";
 import MCPRepository from "@/pages/MCPRepository";
+import WorkflowBuilder from "@/pages/WorkflowBuilder";
 import AIIntelligence from "@/pages/AIIntelligence";
 import NotFound from "@/pages/NotFound";
 import LandingPage from "@/pages/LandingPage";
@@ -51,11 +52,10 @@ const App = () => (
             <Route path="create" element={<ToolForm />} />
             <Route path="edit/:id" element={<ToolForm />} />
           </Route>
-          <Route path="/mcp" element={
-            <AppLayout>
-              <MCPRepository />
-            </AppLayout>
-          } />
+          <Route path="/mcp" element={<AppLayout />}> 
+            <Route index element={<MCPRepository />} />
+            <Route path="builder" element={<WorkflowBuilder />} />
+          </Route>
           <Route path="/intelligence" element={
             <AppLayout>
               <AIIntelligence />

@@ -23,3 +23,7 @@ This project uses React with shadcn-ui components. Below are a few key component
   Displays summary statistics for prompts, tools, MCP components and articles.
 
 Additional layout and UI primitives live under `src/components/ui/`.
+
+## Workflow Builder
+- **WorkflowBuilder** (`src/pages/WorkflowBuilder.tsx`)
+  Allows selecting tools and ordering them to create a saved workflow.

@@ -24,4 +24,10 @@ This project communicates with Supabase through a small API layer located in `sr
 - `updateTool(id, updates)` – update an existing tool.
 - `deleteTool(id)` – remove a tool.
 
+## Workflows API (`src/api/workflows.ts`)
+- `getWorkflows()` – list saved workflows.
+- `getWorkflow(id)` – fetch a single workflow.
+- `createWorkflow(workflow)` – insert a new workflow record.
+- `updateWorkflow(id, updates)` – modify an existing workflow.
+
 These helpers return raw Supabase query results and may throw errors on failure.
