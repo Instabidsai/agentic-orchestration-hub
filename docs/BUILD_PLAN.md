@@ -50,4 +50,3 @@ The project is a React/TypeScript application that manages prompts and tools for
    - Link the new page from the sidebar navigation.
 
 Agents can pick any of the tasks above and implement them. Be sure to run `npm test` before committing.
-

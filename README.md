@@ -10,22 +10,7 @@ Clone the repository and install dependencies:
 git clone <YOUR_GIT_URL>
 cd agentic-orchestration-hub
 npm install
-```
 
-To start the development server:
-
-```sh
-npm run dev
-```
-
-You can switch between light and dark themes using the toggle button in the app header.
-
-Run the test suite and linter before committing:
-
-```sh
-npm run lint
-npm test
-```
 
 ## Development tasks
 

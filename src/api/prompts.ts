@@ -615,39 +615,38 @@ export async function getRelatedPrompts(promptId: string) {
   }
 
   // Get prompts that this prompt targets
-  const { data: targetsData, error: targetsError } = await supabase
-    .from('prompt_relations')
-    .select(
-      `id,
-      relation_type,
-      prompts:target_prompt_id (
-        id,
-        title,
-        description,
-        type,
-        status
-      )`
-    )
-    .eq('source_prompt_id', promptId);
+const { data: targetsData, error: targetsError } = await supabase
+  .from('prompt_relations')
+  .select(`
+    id,
+    relation_type,
+    prompts:target_prompt_id (
+      id,
+      title,
+      description,
+      type,
+      status
+    )`
+  )
+  .eq('source_prompt_id', promptId);
 
-  if (targetsError) {
-    console.error(`Error fetching target relations for prompt ${promptId}:`, targetsError);
-    throw targetsError;
-  }
-
-  return {
-    sources: (sourcesData || []).map(r => ({
-      id: r.id,
-      relation_type: r.relation_type,
-      prompt: r.prompts
-    })),
-    targets: (targetsData || []).map(r => ({
-      id: r.id,
-      relation_type: r.relation_type,
-      prompt: r.prompts
-    }))
-  };
+if (targetsError) {
+  console.error(`Error fetching target relations for prompt ${promptId}:`, targetsError);
+  throw targetsError;
 }
+
+return {
+  sources: (sourcesData || []).map(r => ({
+    id: r.id,
+    relation_type: r.relation_type,
+    prompt: r.prompts
+  })),
+  targets: (targetsData || []).map(r => ({
+    id: r.id,
+    relation_type: r.relation_type,
+    prompt: r.prompts
+  }))
+};
 
 /**
  * Create a relation between two prompts
@@ -669,12 +668,10 @@ export async function addPromptRelation(
 }
 
 /**
-
  * Delete a prompt relation by id
  */
 export async function deletePromptRelation(id: string): Promise<void> {
   const { error } = await supabase.from('prompt_relations').delete().eq('id', id);
-
   if (error) {
     console.error('Error deleting prompt relation:', error);
     throw error;
