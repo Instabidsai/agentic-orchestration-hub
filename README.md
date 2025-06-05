@@ -32,6 +32,8 @@ npm test
 For a list of planned improvements and open tasks, see [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md).
 Agents can pick one of these tasks and submit a PR. Remember to run `npm test` before committing.
 
+Main pages include Prompts, Tools, MCP Repository, and a Workflows list where saved workflows can be viewed.
+
 
 **URL**: https://lovable.dev/projects/7198daf8-e103-4509-a8ea-a2d988812a1c
 

@@ -45,5 +45,9 @@ The project is a React/TypeScript application that manages prompts and tools for
    - Expand `README.md` with setup instructions and contribution guidelines.
    - Document components and APIs in this `docs/` directory. ✅
 
+11. **Workflows list** ✅
+   - Add a page to view saved workflows from Supabase.
+   - Link the new page from the sidebar navigation.
+
 Agents can pick any of the tasks above and implement them. Be sure to run `npm test` before committing.
 

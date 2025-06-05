@@ -57,3 +57,11 @@ export async function updateWorkflow(id: string, updates: WorkflowUpdate): Promi
   return data;
 }
 
+export async function deleteWorkflow(id: string): Promise<void> {
+  const { error } = await supabase.from('workflows').delete().eq('id', id);
+  if (error) {
+    console.error('Error deleting workflow', error);
+    throw error;
+  }
+}
+
